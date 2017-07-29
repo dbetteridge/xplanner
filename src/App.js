@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Legend from "./Legend";
+import TimeSlide from "./TimeSlide";
 import logo from "./logo.svg";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
@@ -7,13 +8,17 @@ import mapboxgl from "mapbox-gl";
 class App extends Component {
   constructor(props) {
     super(props);
+    let date = new Date();
+    date.setDate(date.getDate() - 1);
     this.state = {
       pointLocation: null,
       isDragging: null,
       isCursorOverPoint: null,
-      pointgeoJson: null
+      pointgeoJson: null,
+      date: date
     };
     this.addPoint = this.addPoint.bind(this);
+    this.onChange = this.onChange.bind(this);
   }
   componentDidMount() {
     mapboxgl.accessToken =
@@ -24,6 +29,7 @@ class App extends Component {
       center: [116.62831, -31.652817],
       zoom: 7
     });
+
     let phcodes = {
       0: "red",
       1: "darkorange",
@@ -32,7 +38,7 @@ class App extends Component {
       4: "green",
       null: "rgba(0,0,0,0)"
     };
-
+    this.setState({ map: map, phcodes: phcodes });
     let category;
     fetch(process.env.PUBLIC_URL + "/data/category.json")
       .then(data => {
@@ -40,6 +46,7 @@ class App extends Component {
       })
       .then(json => {
         category = json;
+        this.setState({ category: category });
       });
     let ph;
     fetch(process.env.PUBLIC_URL + "/data/suburbs_500.json")
@@ -48,6 +55,7 @@ class App extends Component {
       })
       .then(json => {
         ph = json;
+        this.setState({ ph: ph });
       });
     let suburbs;
     fetch(process.env.PUBLIC_URL + "/data/suburbs.json")
@@ -56,32 +64,8 @@ class App extends Component {
       })
       .then(json => {
         suburbs = json;
-        suburbs.features.map(suburb => {
-          let key = null;
-          Object.values(ph["Suburb"]).forEach((subvalue, index) => {
-            if (
-              suburb["properties"]["SSC_NAME16"]
-                .toLowerCase()
-                .includes(subvalue.toLowerCase())
-            ) {
-              key = index;
-            }
-          });
-
-          let phresult = ph["13/3/17"][key];
-
-          let categoryindex = null;
-          Object.values(category.Values).forEach((categoryval, index) => {
-            let c = JSON.parse(categoryval);
-
-            if (phresult > c[0] && phresult < c[1]) {
-              categoryindex = index;
-            }
-          });
-
-          suburb["properties"]["color"] = phcodes[categoryindex];
-        });
-        this.addLayers(map, suburbs);
+        this.setState({ suburbs: suburbs });
+        this.colorLayer(map);
       });
 
     map.on("load", () => {
@@ -104,7 +88,48 @@ class App extends Component {
       });
     });
   }
+  colorLayer(map) {
+    let suburbs = this.state.suburbs;
+    suburbs.features.map(suburb => {
+      let key = null;
+      Object.values(this.state.ph["Suburb"]).forEach((subvalue, index) => {
+        if (
+          suburb["properties"]["SSC_NAME16"]
+            .toLowerCase()
+            .includes(subvalue.toLowerCase())
+        ) {
+          key = index;
+        }
+      });
+      let currentdate =
+        this.state.date.getDate() +
+        "/" +
+        this.state.date.getMonth() +
+        "/" +
+        this.state.date.getFullYear().toString().substr(-2);
 
+      let phresult = this.state.ph[currentdate][key];
+
+      let categoryindex = null;
+      Object.values(
+        this.state.category.Values
+      ).forEach((categoryval, index) => {
+        let c = JSON.parse(categoryval);
+
+        if (phresult > c[0] && phresult < c[1]) {
+          categoryindex = index;
+        }
+      });
+
+      suburb["properties"]["color"] = this.state.phcodes[categoryindex];
+    });
+    if (!map.getLayer("suburbs-layer")) {
+      this.addLayers(map, suburbs);
+    } else {
+      map.getSource("suburbs").setData(suburbs);
+    }
+    return suburbs;
+  }
   addPoint(point, map) {
     let newLoc = this.state.pointgeoJson;
     newLoc.features[0].geometry.coordinates = [point.lng, point.lat];
@@ -144,7 +169,19 @@ class App extends Component {
       this.mouseDown(e, map);
     });
   }
+  onChange(e, map) {
+    let date = new Date(e.target.value * 1000);
 
+    this.setState({ date: date });
+
+    if (this.state.timeout) {
+      clearTimeout(this.state.timeout);
+    }
+    let timeout = setTimeout(() => {
+      this.colorLayer(map);
+    }, 1000);
+    this.setState({ timeout: timeout });
+  }
   addLayers(map, suburbs) {
     map.addSource("suburbs", {
       type: "geojson",
@@ -166,6 +203,12 @@ class App extends Component {
       },
       "landcover_snow"
     );
+  }
+
+  removeLayers(map) {
+    map.removeSource("suburbs");
+
+    map.removeLayer("suburbs-layer");
   }
 
   mouseDown(e, map) {
@@ -224,6 +267,12 @@ class App extends Component {
     return (
       <div className="App">
         <div id="map" />
+        <TimeSlide
+          onChange={this.onChange}
+          date={this.state.date}
+          map={this.state.map}
+          key={this.state.date}
+        />
         <Legend />
       </div>
     );

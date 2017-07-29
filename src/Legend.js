@@ -40,7 +40,11 @@ class Legend extends Component {
       <div className="Legend">
         {this.state.legend.map((legenditem, index) => {
           return (
-            <div className="legend" id={"legend" + index}>
+            <div
+              className="legend"
+              id={"legend" + index}
+              key={"legend" + index}
+            >
               <p>
                 {legenditem[0]}
               </p>

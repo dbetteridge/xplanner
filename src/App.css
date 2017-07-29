@@ -35,3 +35,14 @@
   width: 70%;
   margin: 10px;
 }
+
+.timeslide {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 95%;
+}
+
+.timeslide input {
+  width: 90%;
+}
