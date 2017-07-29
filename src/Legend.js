@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 
 import "./App.css";
-import category from "./data/category.json";
 
 class Legend extends Component {
   constructor(props) {
@@ -16,14 +15,22 @@ class Legend extends Component {
       3: "yellow",
       4: "green"
     };
+    let category;
 
-    let legend = Object.keys(
-      category["Soil Acidity"]
-    ).map((categoryval, index) => {
-      return [category["Soil Acidity"][index], phcodes[index]];
-    });
+    fetch("https://xplanner.blob.core.windows.net/xplanner/category.json")
+      .then(data => {
+        return data.json();
+      })
+      .then(json => {
+        category = json;
+        let legend = Object.keys(
+          category["Soil Acidity"]
+        ).map((categoryval, index) => {
+          return [category["Soil Acidity"][index], phcodes[index]];
+        });
 
-    this.setState({ legend: legend });
+        this.setState({ legend: legend });
+      });
   }
   render() {
     if (!this.state.legend) {
