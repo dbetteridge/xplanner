@@ -4,7 +4,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
 import category from "./data/category.json";
-import ph from "./data/ph.json";
+import ph from "./data/suburbs_500.json";
 import suburbs from "./data/suburbs.json";
 
 class App extends Component {
@@ -29,15 +29,20 @@ class App extends Component {
         4: "green",
         null: "rgba(0,0,0,0)"
       };
+
       suburbs.features.map(suburb => {
         let key = null;
         Object.values(ph["Suburb"]).forEach((subvalue, index) => {
-          if (suburb["properties"]["SSC_NAME16"] === subvalue) {
+          if (
+            suburb["properties"]["SSC_NAME16"]
+              .toLowerCase()
+              .includes(subvalue.toLowerCase())
+          ) {
             key = index;
           }
         });
 
-        let phresult = ph["1/2/17"][key];
+        let phresult = ph["13/3/17"][key];
 
         let categoryindex = null;
         Object.values(category.Values).forEach((categoryval, index) => {
@@ -50,6 +55,7 @@ class App extends Component {
 
         suburb["properties"]["color"] = phcodes[categoryindex];
       });
+      console.log(suburbs);
       map.addSource("suburbs", {
         type: "geojson",
         data: suburbs
