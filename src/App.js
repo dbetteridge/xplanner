@@ -34,7 +34,7 @@ class App extends Component {
     };
 
     let category;
-    fetch("/data/category.json")
+    fetch(process.env.PUBLIC_URL + "/data/category.json")
       .then(data => {
         return data.json();
       })
@@ -42,7 +42,7 @@ class App extends Component {
         category = json;
       });
     let ph;
-    fetch("/data/suburbs_500.json")
+    fetch(process.env.PUBLIC_URL + "/data/suburbs_500.json")
       .then(data => {
         return data.json();
       })
@@ -50,7 +50,7 @@ class App extends Component {
         ph = json;
       });
     let suburbs;
-    fetch("/data/suburbs.json")
+    fetch(process.env.PUBLIC_URL + "/data/suburbs.json")
       .then(data => {
         return data.json();
       })
