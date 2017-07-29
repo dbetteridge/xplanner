@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
+import category from "./data/category.json";
+import ph from "./data/ph.json";
+import suburbs from "./data/suburbs.json";
 
 class App extends Component {
   componentDidMount() {
@@ -14,17 +17,52 @@ class App extends Component {
       zoom: 5.3
     });
     map.on("load", () => {
+      console.log(ph);
+      console.log(category);
+
+      let phcodes = {
+        0: "red",
+        1: "darkorange",
+        2: "orange",
+        3: "yellow",
+        4: "green",
+        null: "grey"
+      };
+      suburbs.features.map(suburb => {
+        let key = null;
+        Object.values(ph["Suburb"]).forEach((subvalue, index) => {
+          if (suburb["properties"]["SSC_NAME16"] === subvalue) {
+            key = index;
+          }
+        });
+
+        let phresult = ph["1/2/17"][key];
+
+        let categoryindex = null;
+        Object.values(category.Values).forEach((categoryval, index) => {
+          let c = JSON.parse(categoryval);
+
+          if (phresult > c[0] && phresult < c[1]) {
+            categoryindex = index;
+          }
+        });
+        console.log(categoryindex);
+        suburb["properties"]["color"] = phcodes[categoryindex];
+      });
       map.addSource("suburbs", {
         type: "geojson",
-        data: "suburbs.geojson"
+        data: suburbs
       });
-
+      console.log(suburbs);
       map.addLayer({
         id: "suburbs-layer",
         source: "suburbs",
         type: "fill",
         paint: {
-          "fill-color": "green",
+          "fill-color": {
+            type: "identity",
+            property: "color"
+          },
           "fill-outline-color": "white"
         }
       });
