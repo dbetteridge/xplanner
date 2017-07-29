@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Legend from "./Legend";
 import TimeSlide from "./TimeSlide";
+import Capture from "./Capture";
 import logo from "./logo.svg";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
@@ -274,6 +275,7 @@ class App extends Component {
           key={this.state.date}
         />
         <Legend />
+        <Capture />
       </div>
     );
   }
