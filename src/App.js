@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Legend from "./Legend";
 import logo from "./logo.svg";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
@@ -13,8 +14,8 @@ class App extends Component {
     const map = new mapboxgl.Map({
       container: "map",
       style: "mapbox://styles/mapbox/streets-v9",
-      center: [118, -25],
-      zoom: 5.3
+      center: [121.62831, -27.672817],
+      zoom: 7
     });
     map.on("load", () => {
       console.log(ph);
@@ -26,7 +27,7 @@ class App extends Component {
         2: "orange",
         3: "yellow",
         4: "green",
-        null: "grey"
+        null: "rgba(0,0,0,0)"
       };
       suburbs.features.map(suburb => {
         let key = null;
@@ -75,6 +76,7 @@ class App extends Component {
     return (
       <div className="App">
         <div id="map" />
+        <Legend />
       </div>
     );
   }
