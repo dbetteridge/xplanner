@@ -46,26 +46,29 @@ class App extends Component {
             categoryindex = index;
           }
         });
-        console.log(categoryindex);
+
         suburb["properties"]["color"] = phcodes[categoryindex];
       });
       map.addSource("suburbs", {
         type: "geojson",
         data: suburbs
       });
-      console.log(suburbs);
-      map.addLayer({
-        id: "suburbs-layer",
-        source: "suburbs",
-        type: "fill",
-        paint: {
-          "fill-color": {
-            type: "identity",
-            property: "color"
-          },
-          "fill-outline-color": "white"
-        }
-      });
+
+      map.addLayer(
+        {
+          id: "suburbs-layer",
+          source: "suburbs",
+          type: "fill",
+          paint: {
+            "fill-color": {
+              type: "identity",
+              property: "color"
+            },
+            "fill-outline-color": "white"
+          }
+        },
+        "landcover_snow"
+      );
     });
   }
   render() {
