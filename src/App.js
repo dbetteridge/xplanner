@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Legend from "./Legend";
+import Capture from "./Capture";
 import logo from "./logo.svg";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
@@ -225,6 +226,7 @@ class App extends Component {
       <div className="App">
         <div id="map" />
         <Legend />
+		<Capture />
       </div>
     );
   }
