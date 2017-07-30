@@ -17,7 +17,7 @@ class Capture extends Component {
   render() {
     return (
       React.createElement('form', {className: 'Capture'},
-      React.createElement('h2', {}, "Soil Identification:"),
+      React.createElement('h2', {}, "Soil Characteristics:"),
       React.createElement('label', {value: "label"}),
         React.createElement('input', {
           className:"capture-field",
@@ -25,36 +25,46 @@ class Capture extends Component {
           placeholder: 'pH',
         }),
         React.createElement('input', {
+          className:"capture-field",
+          type: 'text',
+          placeholder: 'Soil Depth (cm)',
+        }),        
+        React.createElement('input', {
           className: 'capture-field',
           type: 'text',
-          placeholder: 'Clay(%)',
+          placeholder: 'Clay (%)',
         }),
         React.createElement('input', {
           className: 'capture-field',
           type: 'text',
-          placeholder: 'Silt(%)',
+          placeholder: 'Silt (%)',
         }),        
         React.createElement('input', {
           className: 'capture-field',
           type: 'text',          
-          placeholder: 'Sand(%)',
+          placeholder: 'Sand (%)',
         }),
-        React.createElement('h2', {}, "pH Modifier Added:"),
+        React.createElement('h2', {}, "Treatment:"),
         React.createElement('input', {
           className: 'capture-field',
           type: 'text',          
-          placeholder: 'Lime(NV)',
-        }),
-        React.createElement('input', {
-          className: 'capture-field',
-          type: 'text',          
-          placeholder: 'LimeMaterial',          
+          placeholder: 'Lime (NV)',
         }),
         React.createElement('input', {
           className: 'capture-field',
           type: 'text',          
-          placeholder: 'LimeCoverage(m2)',          
+          placeholder: 'Lime Material',          
+        }),
+        React.createElement('input', {
+          className: 'capture-field',
+          type: 'text',          
+          placeholder: 'Area Coverage (Ha)',          
         }),    
+        React.createElement('input', {
+          className: 'capture-field',
+          type: 'text',          
+          placeholder: 'Lime Qty (t/ha)',          
+        }),  
         React.createElement('textarea', {
           className: 'capture-textarea',
           placeholder: 'Comments',          
