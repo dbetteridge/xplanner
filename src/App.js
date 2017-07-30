@@ -5,6 +5,7 @@ import Capture from "./Capture";
 import logo from "./logo.svg";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
+import { point, polygon, inside } from "@turf/turf";
 
 class App extends Component {
   constructor(props) {
@@ -24,6 +25,7 @@ class App extends Component {
     };
     this.addPoint = this.addPoint.bind(this);
     this.onChange = this.onChange.bind(this);
+    this.closeCapture = this.closeCapture.bind(this);
   }
   componentDidMount() {
     mapboxgl.accessToken =
@@ -43,8 +45,20 @@ class App extends Component {
       4: "green",
       null: "rgba(0,0,0,0)"
     };
+
     this.setState({ map: map, phcodes: phcodes });
     let category;
+
+    fetch(process.env.PUBLIC_URL + "/data/pins.json")
+      .then(data => {
+        return data.json();
+      })
+      .then(json => {
+        this.setState({
+          pointgeoJson: json,
+          totalPoints: json.features.length
+        });
+      });
     fetch(process.env.PUBLIC_URL + "/data/category.json")
       .then(data => {
         return data.json();
@@ -96,38 +110,58 @@ class App extends Component {
   }
   colorLayer(map) {
     let suburbs = this.state.suburbs;
+    let bb = map.getBounds();
+    let bbpoly = polygon([
+      [
+        [bb.getSouthWest().lng, bb.getSouthWest().lat],
+        [bb.getNorthWest().lng, bb.getNorthWest().lat],
+        [bb.getSouthEast().lng, bb.getSouthEast().lat],
+        [bb.getNorthEast().lng, bb.getNorthEast().lat],
+        [bb.getSouthWest().lng, bb.getSouthWest().lat]
+      ]
+    ]);
     suburbs.features.map(suburb => {
-      let key = null;
-      Object.values(this.state.ph["Suburb"]).forEach((subvalue, index) => {
-        if (
-          suburb["properties"]["SSC_NAME16"]
-            .toLowerCase()
-            .includes(subvalue.toLowerCase())
-        ) {
-          key = index;
-        }
-      });
-      let currentdate =
-        this.state.date.getDate() +
-        "/" +
-        this.state.date.getMonth() +
-        "/" +
-        this.state.date.getFullYear().toString().substr(-2);
+      let suburbpoint = point(
+        suburb.geometry.coordinates[
+          suburb.geometry.coordinates.length - 1
+        ][0][0]
+      );
 
-      let phresult = this.state.ph[currentdate][key];
+      if (inside(suburbpoint, bbpoly)) {
+        let key = null;
+        Object.values(this.state.ph["Suburb"]).forEach((subvalue, index) => {
+          if (
+            suburb["properties"]["SSC_NAME16"]
+              .toLowerCase()
+              .includes(subvalue.toLowerCase())
+          ) {
+            key = index;
+          }
+        });
+        let currentdate =
+          this.state.date.getDate() +
+          "/" +
+          this.state.date.getMonth() +
+          "/" +
+          this.state.date.getFullYear().toString().substr(-2);
 
-      let categoryindex = null;
-      Object.values(
-        this.state.category.Values
-      ).forEach((categoryval, index) => {
-        let c = JSON.parse(categoryval);
+        let phresult = this.state.ph[currentdate][key];
 
-        if (phresult > c[0] && phresult < c[1]) {
-          categoryindex = index;
-        }
-      });
+        let categoryindex = null;
+        Object.values(
+          this.state.category.Values
+        ).forEach((categoryval, index) => {
+          let c = JSON.parse(categoryval);
 
-      suburb["properties"]["color"] = this.state.phcodes[categoryindex];
+          if (phresult > c[0] && phresult < c[1]) {
+            categoryindex = index;
+          }
+        });
+
+        suburb["properties"]["color"] = this.state.phcodes[categoryindex];
+      } else {
+        suburb["properties"]["color"] = "rgba(0,0,0,0)";
+      }
     });
     if (!map.getLayer("suburbs-layer")) {
       this.addLayers(map, suburbs);
@@ -146,7 +180,8 @@ class App extends Component {
     let { totalPoints } = this.state;
     this.setState({
       pointgeoJson: newLoc,
-      totalPoints: this.state.totalPoints + 1
+      totalPoints: this.state.totalPoints + 1,
+      capture: <Capture closeCapture={this.closeCapture} />
     });
     totalPoints += 1;
 
@@ -195,8 +230,11 @@ class App extends Component {
     }
     let timeout = setTimeout(() => {
       this.colorLayer(map);
-    }, 1000);
+    }, 100);
     this.setState({ timeout: timeout });
+  }
+  closeCapture() {
+    this.setState({ capture: null });
   }
   addLayers(map, suburbs) {
     map.addSource("suburbs", {
@@ -292,7 +330,7 @@ class App extends Component {
           key={this.state.date}
         />
         <Legend />
-        <Capture />
+        {this.state.capture}
       </div>
     );
   }

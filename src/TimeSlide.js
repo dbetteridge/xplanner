@@ -28,6 +28,7 @@ class TimeSlide extends Component {
           value={this.state.date.getTime() / 1000}
           min={minDate.getTime() / 1000}
           max={date.getTime() / 1000}
+          step={1000000}
           onChange={e => {
             this.props.onChange(e, this.props.map);
           }}

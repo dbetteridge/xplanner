@@ -11,7 +11,7 @@
   top: 10px;
   left: 10px;
   background-color: white;
-  width: 200px;
+  width: 250px;
 }
 
 .colourtag {
@@ -58,9 +58,14 @@
 
 .capture-button {
   width: 100px;
-  margin-left: 90px;
+  padding: 10px;
+  background-color: lightgray;
+  margin: 0 auto;
 }
-
+.capture-button:hover {
+  background-color: gray;
+  cursor: pointer;
+}
 .capture-field {
   font-size: 16px;
   font-weight: bold;

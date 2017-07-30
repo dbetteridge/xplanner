@@ -17,7 +17,7 @@ class Legend extends Component {
     };
     let category;
 
-    fetch("https://xplanner.blob.core.windows.net/xplanner/category.json")
+    fetch("/data/category.json")
       .then(data => {
         return data.json();
       })
