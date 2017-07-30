@@ -248,15 +248,17 @@ class App extends Component {
     this.setState({ date: date });
     let newpointsjson = this.state.pointgeoJson;
 
-    newpointsjson.features = this.state.pointgeoJson.features.map(point => {
+    newpointsjson.features = this.state.pointgeoJson.features.filter(point => {
       if (point) {
         if (point.properties["timestamp"] < e.target.value) {
-          return point;
+          console.log(e.target.value);
+          return true;
         }
+      } else {
+        return false;
       }
     });
     map.getSource("points").setData(newpointsjson);
-
     if (this.state.timeout) {
       clearTimeout(this.state.timeout);
     }

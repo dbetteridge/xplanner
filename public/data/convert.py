@@ -19,7 +19,7 @@ for suburb in suburbs['features']:
 
 newfeatures = []
 for index,value in enumerate(suburbs['features']):
-    if(index < 200):
+    if(index < 500):
         suburbs['features'][index]['geometry']['coordinates'] = suburbfeat[index]
         suburbs['features'][index]['geometry']['type'] = "Point"
         properties = suburbs['features'][index]['properties']        
@@ -32,7 +32,7 @@ for index,value in enumerate(suburbs['features']):
         properties['limecoverage'] = 200
         properties['comment'] = ""
         
-        index2 = random.randrange(0, len(timestamps))
+        index2 = random.randrange(len(timestamps)/2, len(timestamps))
    
         properties['timestamp'] = timestamps[index2]
         suburbs['features'][index]['properties'] = properties
