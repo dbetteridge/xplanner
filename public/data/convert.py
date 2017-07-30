@@ -1,5 +1,6 @@
 import json
 from shapely.geometry import shape
+import random
 
 timestamps = []
 with open('./-.txt', 'r') as f:
@@ -16,9 +17,26 @@ for suburb in suburbs['features']:
     point = polygon.centroid
     suburbfeat.append([point.x,point.y])
 
+newfeatures = []
 for index,value in enumerate(suburbs['features']):
-    suburbs['features'][index]['geometry']['coordinates'] = suburbfeat[index]
-    suburbs['features'][index]['geometry']['type'] = "Point"
-
+    if(index < 200):
+        suburbs['features'][index]['geometry']['coordinates'] = suburbfeat[index]
+        suburbs['features'][index]['geometry']['type'] = "Point"
+        properties = suburbs['features'][index]['properties']        
+        properties['PH'] = 7
+        properties['clay'] = 10
+        properties['silt'] = 10
+        properties['sand'] = 60
+        properties['limenv'] = 10
+        properties['limematerial'] = ""
+        properties['limecoverage'] = 200
+        properties['comment'] = ""
+        
+        index2 = random.randrange(0, len(timestamps))
+   
+        properties['timestamp'] = timestamps[index2]
+        suburbs['features'][index]['properties'] = properties
+        newfeatures.append(suburbs['features'][index])
+suburbs['features'] = newfeatures
 with open('./pins.json', 'w') as output:
     json.dump(suburbs, output)

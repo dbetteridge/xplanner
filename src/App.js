@@ -54,10 +54,15 @@ class App extends Component {
         return data.json();
       })
       .then(json => {
-        this.setState({
-          pointgeoJson: json,
-          totalPoints: json.features.length
-        });
+        this.setState(
+          {
+            pointgeoJson: json,
+            totalPoints: json.features.length
+          },
+          () => {
+            this.drawPoints(map);
+          }
+        );
       });
     fetch(process.env.PUBLIC_URL + "/data/category.json")
       .then(data => {
@@ -170,6 +175,23 @@ class App extends Component {
     }
     return suburbs;
   }
+
+  drawPoints(map) {
+    map.addSource("points", {
+      type: "geojson",
+      data: this.state.pointgeoJson
+    });
+
+    map.addLayer({
+      id: "points",
+      type: "circle",
+      source: "points",
+      paint: {
+        "circle-radius": 10,
+        "circle-color": "#3887be"
+      }
+    });
+  }
   addPoint(point, map) {
     let newLoc = this.state.pointgeoJson;
 
@@ -224,6 +246,16 @@ class App extends Component {
     let date = new Date(e.target.value * 1000);
 
     this.setState({ date: date });
+    let newpointsjson = this.state.pointgeoJson;
+
+    newpointsjson.features = this.state.pointgeoJson.features.map(point => {
+      if (point) {
+        if (point.properties["timestamp"] < e.target.value) {
+          return point;
+        }
+      }
+    });
+    map.getSource("points").setData(newpointsjson);
 
     if (this.state.timeout) {
       clearTimeout(this.state.timeout);
