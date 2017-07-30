@@ -15,7 +15,11 @@ class App extends Component {
       pointLocation: null,
       isDragging: null,
       isCursorOverPoint: null,
-      pointgeoJson: null,
+      pointgeoJson: {
+        type: "FeatureCollection",
+        features: []
+      },
+      totalPoints: 0,
       date: date
     };
     this.addPoint = this.addPoint.bind(this);
@@ -70,22 +74,23 @@ class App extends Component {
       });
 
     map.on("load", () => {
-      this.setState({
-        pointgeoJson: {
-          type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              geometry: {
-                type: "Point",
-                coordinates: [116.62831, -31.652817]
-              }
-            }
-          ]
-        }
-      });
       map.on("click", e => {
-        this.addPoint(e.lngLat, map);
+        let geojson = this.state.pointgeoJson;
+        geojson.features.push({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [116.62831, -31.652817]
+          }
+        });
+        this.setState(
+          {
+            pointgeoJson: geojson
+          },
+          () => {
+            this.addPoint(e.lngLat, map);
+          }
+        );
       });
     });
   }
@@ -133,34 +138,44 @@ class App extends Component {
   }
   addPoint(point, map) {
     let newLoc = this.state.pointgeoJson;
-    newLoc.features[0].geometry.coordinates = [point.lng, point.lat];
-    this.setState({ pointgeoJson: newLoc });
-    map.addSource("point", {
-      type: "geojson",
-      data: newLoc
-    });
 
+    newLoc.features[this.state.totalPoints].geometry.coordinates = [
+      point.lng,
+      point.lat
+    ];
+    let { totalPoints } = this.state;
+    this.setState({
+      pointgeoJson: newLoc,
+      totalPoints: this.state.totalPoints + 1
+    });
+    totalPoints += 1;
+
+    map.addSource("point" + totalPoints, {
+      type: "geojson",
+      data: newLoc.features[totalPoints - 1]
+    });
     map.addLayer({
-      id: "point",
+      id: "point" + totalPoints,
       type: "circle",
-      source: "point",
+      source: "point" + totalPoints,
       paint: {
         "circle-radius": 10,
         "circle-color": "#3887be"
       }
     });
+
     let canvas = map.getCanvasContainer();
     // When the cursor enters a feature in the point layer, prepare for dragging.
-    map.on("mouseenter", "point", () => {
-      map.setPaintProperty("point", "circle-color", "#3bb2d0");
+    map.on("mouseenter", "point" + totalPoints, () => {
+      map.setPaintProperty("point" + totalPoints, "circle-color", "#3bb2d0");
       canvas.style.cursor = "move";
       this.setState({ isCursorOverPoint: true });
 
       map.dragPan.disable();
     });
 
-    map.on("mouseleave", "point", () => {
-      map.setPaintProperty("point", "circle-color", "#3887be");
+    map.on("mouseleave", "point" + totalPoints, () => {
+      map.setPaintProperty("point" + totalPoints, "circle-color", "#3887be");
       canvas.style.cursor = "";
       this.setState({ isCursorOverPoint: false });
       map.dragPan.enable();
@@ -240,11 +255,13 @@ class App extends Component {
 
     // Update the Point feature in `geojson` coordinates
     // and call setData to the source layer `point` on it.
-    this.state.pointgeoJson.features[0].geometry.coordinates = [
-      coords.lng,
-      coords.lat
-    ];
-    map.getSource("point").setData(this.state.pointgeoJson);
+
+    this.state.pointgeoJson.features[
+      this.state.totalPoints - 1
+    ].geometry.coordinates = [coords.lng, coords.lat];
+    this.state.map
+      .getSource("point" + this.state.totalPoints)
+      .setData(this.state.pointgeoJson.features[this.state.totalPoints - 1]);
   }
 
   onUp(e, map) {
