@@ -199,6 +199,10 @@ class App extends Component {
       point.lng,
       point.lat
     ];
+    newLoc.features[this.state.totalPoints]["properties"] = {};
+    newLoc.features[this.state.totalPoints]["properties"][
+      "timestamp"
+    ] = new Date().getTime();
     let { totalPoints } = this.state;
     this.setState({
       pointgeoJson: newLoc,
